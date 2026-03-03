@@ -1,47 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Live RNG System</title>
-    <link rel="stylesheet" href="/static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live RNG</title>
+
+<style>
+body {
+  background: #0f172a;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin: auto;
+  max-width: 400px;
+}
+
+#result {
+  font-size: 60px;
+  margin: 20px 0;
+  color: #00ff99;
+}
+
+#timer {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #334155;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 8px;
+}
+</style>
+
 </head>
 <body>
 
-<div class="container">
-    <h2>Live RNG</h2>
-    <h3 id="round"></h3>
-    <div id="timer"></div>
-    <div id="result">Waiting...</div>
+<div class="card">
+  <h2>🎲 Live RNG</h2>
+  <div id="round"></div>
+  <div id="timer"></div>
+  <div id="result">Waiting...</div>
 
-    <h4>Last 2 Results</h4>
-    <ul id="history"></ul>
+  <h4>Last 2 Results</h4>
+  <ul id="history"></ul>
 </div>
 
 <script>
-function loadData(){
-    fetch('/api/data')
-    .then(res => res.json())
-    .then(data => {
+function load(){
+ fetch('/api')
+ .then(r=>r.json())
+ .then(d=>{
+   document.getElementById("round").innerText="Round ID: "+d.round_id;
+   document.getElementById("timer").innerText="Time Left: "+d.remaining+"s";
 
-        document.getElementById("round").innerText = "Round ID: " + data.round_id;
-        document.getElementById("timer").innerText = "Time Left: " + data.remaining + "s";
+   if(d.result !== null){
+     document.getElementById("result").innerText=d.result;
+   } else {
+     document.getElementById("result").innerText="Waiting...";
+   }
 
-        if(data.result !== null){
-            document.getElementById("result").innerText = "Result: " + data.result;
-        } else {
-            document.getElementById("result").innerText = "Result: Waiting...";
-        }
+   let h="";
+   d.history.slice().reverse().forEach(x=>{
+     h+=`<li>${x[0]} → ${x[1]}</li>`;
+   });
 
-        let historyHTML = "";
-        data.history.slice().reverse().forEach(item => {
-            historyHTML += `<li>${item[0]} → ${item[1]}</li>`;
-        });
-
-        document.getElementById("history").innerHTML = historyHTML;
-    });
+   document.getElementById("history").innerHTML=h;
+ });
 }
 
-setInterval(loadData, 1000);
-loadData();
+setInterval(load,1000);
+load();
 </script>
 
 </body>
