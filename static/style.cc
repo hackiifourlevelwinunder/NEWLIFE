@@ -1,0 +1,17 @@
+body{
+    font-family: Arial;
+    background:#111;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    margin-top:50px;
+}
+
+#result{
+    font-size:40px;
+    margin-top:20px;
+    color:#00ff99;
+}
+
