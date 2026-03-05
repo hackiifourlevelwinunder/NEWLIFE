@@ -5,84 +5,109 @@
 <title>Live RNG</title>
 
 <style>
-body {
-  background: #0f172a;
-  color: white;
-  font-family: Arial;
-  text-align: center;
-  padding: 20px;
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:20px;
 }
 
-.card {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 15px;
-  margin: auto;
-  max-width: 400px;
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+max-width:400px;
+margin:auto;
 }
 
-#result {
-  font-size: 60px;
-  margin: 20px 0;
-  color: #00ff99;
+#round{
+font-size:18px;
+margin-bottom:10px;
 }
 
-#timer {
-  font-size: 20px;
-  margin-bottom: 10px;
+#timer{
+font-size:20px;
+margin-bottom:10px;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
+#result{
+font-size:60px;
+margin:20px 0;
+color:#00ff99;
 }
 
-li {
-  background: #334155;
-  margin: 5px 0;
-  padding: 8px;
-  border-radius: 8px;
+ul{
+list-style:none;
+padding:0;
 }
+
+li{
+background:#334155;
+margin:5px 0;
+padding:8px;
+border-radius:8px;
+}
+
 </style>
-
 </head>
+
 <body>
 
 <div class="card">
-  <h2>🎲 Live RNG</h2>
-  <div id="round"></div>
-  <div id="timer"></div>
-  <div id="result">Waiting...</div>
 
-  <h4>Last 2 Results</h4>
-  <ul id="history"></ul>
+<h2>🎲 Live RNG</h2>
+
+<div id="round"></div>
+
+<div id="timer"></div>
+
+<div id="result">Waiting...</div>
+
+<h4>Last 2 Results</h4>
+
+<ul id="history"></ul>
+
 </div>
 
 <script>
+
 function load(){
- fetch('/api')
- .then(r=>r.json())
- .then(d=>{
-   document.getElementById("round").innerText="Round ID: "+d.round_id;
-   document.getElementById("timer").innerText="Time Left: "+d.remaining+"s";
 
-   if(d.result !== null){
-     document.getElementById("result").innerText=d.result;
-   } else {
-     document.getElementById("result").innerText="Waiting...";
-   }
+fetch('/api')
 
-   let h="";
-   d.history.slice().reverse().forEach(x=>{
-     h+=`<li>${x[0]} → ${x[1]}</li>`;
-   });
+.then(r=>r.json())
 
-   document.getElementById("history").innerHTML=h;
- });
+.then(d=>{
+
+document.getElementById("round").innerText="Round ID: "+d.round_id
+
+document.getElementById("timer").innerText="Time Left: "+d.remaining+"s"
+
+if(d.result!==null){
+document.getElementById("result").innerText=d.result
+}
+else{
+document.getElementById("result").innerText="Waiting..."
 }
 
-setInterval(load,1000);
-load();
+let h=""
+
+d.history.slice().reverse().forEach(x=>{
+h+=`<li>${x[0]} → ${x[1]}</li>`
+})
+
+document.getElementById("history").innerHTML=h
+
+})
+
+}
+
+setInterval(load,1000)
+
+load()
+
 </script>
 
 </body>
