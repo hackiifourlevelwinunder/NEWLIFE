@@ -25,8 +25,6 @@ def get_round_info():
     reset_time = get_reset_time(now)
 
     total_minutes = int((now - reset_time).total_seconds() // 60)
-
-    # next minute round logic
     running_round = total_minutes + 1
 
     date_part = now.strftime("%Y%m%d")
@@ -37,11 +35,31 @@ def get_round_info():
     return round_id, remaining, running_round
 
 
-# Time + Round deterministic RNG
 def generate_result(round_id):
-    combined = round_id
-    hash_value = hashlib.sha256(combined.encode()).hexdigest()
-    return int(hash_value, 16) % 10
+
+    now = datetime.now(IST)
+
+    base_string = round_id + now.strftime("%Y%m%d%H%M")
+
+    hash_val = hashlib.sha256(base_string.encode()).hexdigest()
+
+    base_number = int(hash_val, 16) % 10
+
+    minute = now.minute
+
+    if minute % 5 == 0:
+        bias_numbers = [1,3,7,9]
+    elif minute % 3 == 0:
+        bias_numbers = [2,4,6,8]
+    else:
+        bias_numbers = [0,5]
+
+    index = int(hash_val[5:10],16) % len(bias_numbers)
+
+    if int(hash_val[0],16) % 2 == 0:
+        return bias_numbers[index]
+    else:
+        return base_number
 
 
 @app.route("/")
@@ -51,6 +69,7 @@ def home():
 
 @app.route("/api")
 def api():
+
     round_id, remaining, running_round = get_round_info()
 
     if remaining <= 40:
@@ -58,17 +77,22 @@ def api():
     else:
         result = None
 
-    # History (last 2 rounds)
     history = []
+
     now = datetime.now(IST)
     reset_time = get_reset_time(now)
     total_minutes = int((now - reset_time).total_seconds() // 60)
 
-    for i in range(1, 3):
+    for i in range(1,3):
+
         prev_round = total_minutes - i + 1
+
         if prev_round >= 0:
+
             prev_id = f"{now.strftime('%Y%m%d')}{FIXED_PART}{prev_round:04d}"
+
             prev_result = generate_result(prev_id)
+
             history.append([prev_id, prev_result])
 
     return jsonify({
