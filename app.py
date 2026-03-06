@@ -25,6 +25,7 @@ def get_round_info():
     reset_time = get_reset_time(now)
 
     total_minutes = int((now - reset_time).total_seconds() // 60)
+
     running_round = total_minutes + 1
 
     date_part = now.strftime("%Y%m%d")
@@ -32,34 +33,39 @@ def get_round_info():
 
     remaining = 60 - now.second
 
-    return round_id, remaining, running_round
+    return round_id, remaining
 
 
+# 🔥 Advanced RNG
 def generate_result(round_id):
 
-    now = datetime.now(IST)
+    seed = round_id + datetime.now(IST).strftime("%Y%m%d%H%M")
 
-    base_string = round_id + now.strftime("%Y%m%d%H%M")
+    hash_val = hashlib.sha256(seed.encode()).hexdigest()
 
-    hash_val = hashlib.sha256(base_string.encode()).hexdigest()
+    base = int(hash_val,16) % 10
 
-    base_number = int(hash_val, 16) % 10
+    minute = datetime.now(IST).minute
 
-    minute = now.minute
-
+    # live frequency logic
     if minute % 5 == 0:
-        bias_numbers = [1,3,7,9]
+        high_freq = [7,7,9,9,1,3]
+    elif minute % 4 == 0:
+        high_freq = [6,6,8,8,2,4]
     elif minute % 3 == 0:
-        bias_numbers = [2,4,6,8]
+        high_freq = [5,5,0,0]
     else:
-        bias_numbers = [0,5]
+        high_freq = [base]
 
-    index = int(hash_val[5:10],16) % len(bias_numbers)
+    selector = int(hash_val[5:10],16) % 10
 
-    if int(hash_val[0],16) % 2 == 0:
-        return bias_numbers[index]
+    if selector < 7:
+        idx = int(hash_val[10:15],16) % len(high_freq)
+        number = high_freq[idx]
     else:
-        return base_number
+        number = base
+
+    return number
 
 
 @app.route("/")
@@ -70,36 +76,17 @@ def home():
 @app.route("/api")
 def api():
 
-    round_id, remaining, running_round = get_round_info()
+    round_id, remaining = get_round_info()
 
     if remaining <= 40:
         result = generate_result(round_id)
     else:
         result = None
 
-    history = []
-
-    now = datetime.now(IST)
-    reset_time = get_reset_time(now)
-    total_minutes = int((now - reset_time).total_seconds() // 60)
-
-    for i in range(1,3):
-
-        prev_round = total_minutes - i + 1
-
-        if prev_round >= 0:
-
-            prev_id = f"{now.strftime('%Y%m%d')}{FIXED_PART}{prev_round:04d}"
-
-            prev_result = generate_result(prev_id)
-
-            history.append([prev_id, prev_result])
-
     return jsonify({
         "round_id": round_id,
         "remaining": remaining,
-        "result": result,
-        "history": history
+        "result": result
     })
 
 
