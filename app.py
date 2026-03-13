@@ -40,10 +40,22 @@ def get_round_info():
 
 def generate_result():
 
+    now = datetime.now(IST)
+
+    # minute based weight
+    hot_digit = now.minute % 10
+
     freq = [0] * 10
 
-    for _ in range(4021):
+    for _ in range(90720):
+
+        # cryptographic random
         n = secrets.randbelow(10)
+
+        # hot digit boost
+        if secrets.randbelow(4) == 0:
+            n = hot_digit
+
         freq[n] += 1
 
     return freq.index(max(freq))
@@ -62,7 +74,6 @@ def api():
 
     round_id, remaining = get_round_info()
 
-    # preview 40 sec
     if remaining <= 40:
 
         if last_round != round_id:
@@ -81,7 +92,6 @@ def api():
     })
 
 
-# render port fix
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT",10000))
+    app.run(host="0.0.0.0",port=port)
