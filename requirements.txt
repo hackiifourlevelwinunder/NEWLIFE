@@ -1,6 +1,4 @@
 flask
 gunicorn
 pytz
-flask
-pytz
 pycryptodome
