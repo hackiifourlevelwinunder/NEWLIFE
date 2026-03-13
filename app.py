@@ -1,5 +1,5 @@
 import os
-import hashlib
+import random
 from datetime import datetime, timedelta
 import pytz
 from flask import Flask, jsonify, render_template
@@ -38,18 +38,19 @@ def get_round_info():
     return round_id, remaining
 
 
-def generate_result(round_id):
+def generate_result():
 
-    # SHA256 hash
-    h = hashlib.sha256(round_id.encode()).hexdigest()
+    freq = [0] * 10
 
-    # huge number
-    number = int(h, 16)
+    # fast local variables
+    randint = random.randint
+    f = freq
 
-    # final digit
-    result = number % 10
+    for _ in range(500000):
+        n = randint(0, 9)
+        f[n] += 1
 
-    return result
+    return f.index(max(f))
 
 
 @app.route("/")
@@ -69,7 +70,7 @@ def api():
     if remaining <= 40:
 
         if last_round != round_id:
-            last_result = generate_result(round_id)
+            last_result = generate_result()
             last_round = round_id
 
         result = last_result
@@ -85,5 +86,5 @@ def api():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT",10000))
-    app.run(host="0.0.0.0",port=port)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
