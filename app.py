@@ -1,5 +1,5 @@
 import os
-import random
+import secrets
 from datetime import datetime, timedelta
 import pytz
 from flask import Flask, jsonify, render_template
@@ -38,14 +38,13 @@ def get_round_info():
     return round_id, remaining
 
 
-def generate_result(round_id):
-
-    random.seed(round_id)
+def generate_result():
 
     freq = {i: 0 for i in range(10)}
 
-    for _ in range(70000):
-        n = random.randint(0, 9)
+    # cryptography RNG
+    for _ in range(4021):
+        n = secrets.randbelow(10)
         freq[n] += 1
 
     result = max(freq, key=freq.get)
@@ -69,7 +68,7 @@ def api():
     if remaining <= 40:
 
         if current_round != round_id:
-            current_result = generate_result(round_id)
+            current_result = generate_result()
             current_round = round_id
 
         result = current_result
@@ -85,5 +84,5 @@ def api():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT",10000))
+    app.run(host="0.0.0.0",port=port)
