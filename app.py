@@ -1,25 +1,21 @@
-import os
-import hashlib
-from datetime import datetime, timedelta
-import pytz
 from flask import Flask, jsonify, render_template
+import hashlib
+import time
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-IST = pytz.timezone("Asia/Kolkata")
+ROUND_TIME = 60
+PREVIEW_TIME = 40
 
-FIXED_PART = "10001"
-RESET_HOUR = 5
-RESET_MINUTE = 30
-
-TOTAL_RNG = 4353
-
-last_round = None
-last_result = None
+SERVER_SEED = "ankush_super_secret_salt"
 
 
-def get_reset_time(now):
-    reset = now.replace(hour=RESET_HOUR, minute=RESET_MINUTE, second=0, microsecond=0)
+def get_today_reset():
+
+    now = datetime.now()
+
+    reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
 
     if now < reset:
         reset -= timedelta(days=1)
@@ -27,88 +23,110 @@ def get_reset_time(now):
     return reset
 
 
-def get_round_info():
+def get_round():
 
-    now = datetime.now(IST)
+    reset = get_today_reset()
 
-    reset_time = get_reset_time(now)
+    now = datetime.now()
 
-    minutes = int((now - reset_time).total_seconds() // 60)
+    diff = now - reset
 
-    round_no = minutes + 1
+    seconds = diff.total_seconds()
 
-    date_part = now.strftime("%Y%m%d")
+    round_number = int(seconds // 60) + 1
 
-    round_id = f"{date_part}{FIXED_PART}{round_no:04d}"
-
-    remaining = 60 - now.second
-
-    return round_id, remaining
+    return round_number
 
 
-def sha_rng(seed, counter):
+def get_period():
 
-    data = f"{seed}-{counter}"
+    date = datetime.now().strftime("%Y%m%d")
 
-    hash_val = hashlib.sha256(data.encode()).hexdigest()
+    round_number = get_round()
 
-    num = int(hash_val, 16)
+    period = f"{date}10001{round_number:04d}"
 
-    return num % 10
+    return period
 
 
-def generate_result(round_id):
+def get_time_left():
 
-    freq = [0] * 10
+    t = int(time.time())
 
-    for i in range(TOTAL_RNG):
+    return ROUND_TIME - (t % ROUND_TIME)
 
-        n = sha_rng(round_id, i)
 
-        freq[n] += 1
+def generate_number(period):
 
-    result = freq.index(max(freq))
+    data = f"{SERVER_SEED}-{period}"
 
-    return result
+    h = hashlib.sha256(data.encode()).hexdigest()
+
+    number = int(h, 16) % 10
+
+    return number
+
+
+def get_size(n):
+
+    if n >= 5:
+        return "Big"
+    return "Small"
+
+
+def get_color(n):
+
+    if n in [1,3,7,9]:
+        return "Green"
+
+    if n in [2,4,6,8]:
+        return "Red"
+
+    if n == 0:
+        return "Red + Violet"
+
+    if n == 5:
+        return "Green + Violet"
 
 
 @app.route("/")
 def home():
-
     return render_template("index.html")
 
 
-@app.route("/api")
+@app.route("/api/result")
 def api():
 
-    global last_round
-    global last_result
+    period = get_period()
 
-    round_id, remaining = get_round_info()
+    time_left = get_time_left()
 
-    if remaining <= 40:
+    if time_left <= PREVIEW_TIME:
 
-        if last_round != round_id:
+        number = generate_number(period)
 
-            last_result = generate_result(round_id)
+        color = get_color(number)
 
-            last_round = round_id
-
-        result = last_result
+        size = get_size(number)
 
     else:
 
-        result = None
+        number = None
+
+        color = None
+
+        size = None
 
     return jsonify({
-        "round_id": round_id,
-        "remaining": remaining,
-        "result": result
+
+        "period": period,
+        "time_left": time_left,
+        "number": number,
+        "color": color,
+        "size": size
+
     })
 
 
 if __name__ == "__main__":
-
-    port = int(os.environ.get("PORT", 10000))
-
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000)
