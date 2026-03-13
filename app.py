@@ -2,6 +2,7 @@ from flask import Flask, jsonify, render_template
 import time
 from datetime import datetime, timedelta
 import pytz
+from Crypto.Hash import keccak
 
 app = Flask(__name__)
 
@@ -9,11 +10,6 @@ IST = pytz.timezone("Asia/Kolkata")
 
 ROUND_TIME = 60
 PREVIEW_TIME = 40
-
-# LCG parameters
-A = 1103515245
-C = 12345
-M = 2**31
 
 
 def get_now():
@@ -60,18 +56,31 @@ def get_time_left():
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-def lcg(seed):
+# TRON style hash (Keccak256)
+def tron_hash(data):
 
-    return (A * seed + C) % M
+    k = keccak.new(digest_bits=256)
+
+    k.update(data.encode())
+
+    return k.hexdigest()
 
 
-def generate_number(period):
+def generate_preview(period):
 
-    seed = int(period[-4:])  # last 4 digits (example 1064)
+    h = tron_hash(period)
 
-    value = lcg(seed)
+    # Preview 1 → last hex digit
+    last_hex = h[-1]
 
-    return value % 10
+    preview1 = int(last_hex, 16) % 10
+
+    # Preview 2 → extract hash
+    decimal_val = int(h, 16)
+
+    preview2 = int(str(decimal_val)[-1])
+
+    return preview1, preview2
 
 
 @app.route("/")
@@ -86,15 +95,18 @@ def result():
 
     time_left = get_time_left()
 
-    number = generate_number(period)
+    p1, p2 = generate_preview(period)
 
     if time_left > PREVIEW_TIME:
-        number = None
+
+        p1 = None
+        p2 = None
 
     return jsonify({
         "period": period,
         "time_left": time_left,
-        "number": number
+        "preview1": p1,
+        "preview2": p2
     })
 
 
