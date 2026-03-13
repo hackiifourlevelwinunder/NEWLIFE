@@ -1,4 +1,5 @@
 import os
+import random
 from datetime import datetime, timedelta
 import pytz
 from flask import Flask, jsonify, render_template
@@ -11,22 +12,8 @@ FIXED_PART = "10001"
 RESET_HOUR = 5
 RESET_MINUTE = 30
 
-round_results = {}
-
-# XOROSHIRO RNG
-def xoroshiro(seed):
-    s0 = seed & 0xffffffff
-    s1 = (seed ^ 0x9E3779B9) & 0xffffffff
-
-    while True:
-        result = (s0 + s1) & 0xffffffff
-
-        s1 ^= s0
-        s0 = ((s0 << 24) | (s0 >> 8)) & 0xffffffff
-        s0 ^= s1 ^ ((s1 << 16) & 0xffffffff)
-        s1 = ((s1 << 37) | (s1 >> 27)) & 0xffffffff
-
-        yield result
+current_round = None
+current_result = None
 
 
 def get_reset_time(now):
@@ -53,19 +40,13 @@ def get_round_info():
 
 def generate_result(round_id):
 
-    seed = int(round_id[-4:])
+    random.seed(round_id)
 
-    rng = xoroshiro(seed)
+    freq = {i: 0 for i in range(10)}
 
-    numbers = []
-
-    for _ in range(1000):
-        numbers.append(next(rng) % 10)
-
-    freq = {}
-
-    for n in numbers:
-        freq[n] = freq.get(n, 0) + 1
+    for _ in range(70000):
+        n = random.randint(0, 9)
+        freq[n] += 1
 
     result = max(freq, key=freq.get)
 
@@ -80,14 +61,18 @@ def home():
 @app.route("/api")
 def api():
 
+    global current_round
+    global current_result
+
     round_id, remaining = get_round_info()
 
     if remaining <= 40:
 
-        if round_id not in round_results:
-            round_results[round_id] = generate_result(round_id)
+        if current_round != round_id:
+            current_result = generate_result(round_id)
+            current_round = round_id
 
-        result = round_results[round_id]
+        result = current_result
 
     else:
         result = None
@@ -99,7 +84,6 @@ def api():
     })
 
 
-# Render Safe Run
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
