@@ -1,56 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Live RNG</title>
 
 <style>
 
 body{
-background:#0f172a;
+background:#0b1b2b;
 color:white;
 font-family:Arial;
 text-align:center;
-padding:20px;
+margin-top:80px;
 }
 
 .card{
-background:#1e293b;
-padding:20px;
-border-radius:15px;
-max-width:400px;
+background:#14263a;
+width:320px;
 margin:auto;
+padding:30px;
+border-radius:15px;
 }
 
-#round{
-font-size:18px;
-margin-bottom:10px;
+.number{
+font-size:80px;
+color:#00ff9c;
 }
 
-#timer{
-font-size:20px;
-margin-bottom:10px;
-}
-
-#result{
-font-size:60px;
-margin:20px 0;
-color:#00ff99;
-}
-
-ul{
-list-style:none;
-padding:0;
-}
-
-li{
-background:#334155;
-margin:5px 0;
-padding:8px;
-border-radius:8px;
+.wait{
+font-size:50px;
+color:#00ff9c;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -59,54 +41,41 @@ border-radius:8px;
 
 <h2>🎲 Live RNG</h2>
 
-<div id="round"></div>
+<p>Period: <span id="period">-</span></p>
 
-<div id="timer"></div>
+<p>Time Left: <span id="time">-</span>s</p>
 
-<div id="result">Waiting...</div>
-
-<h4>Last 2 Results</h4>
-
-<ul id="history"></ul>
+<div id="result" class="wait">Waiting...</div>
 
 </div>
 
 <script>
 
-function load(){
+async function update(){
 
-fetch('/api')
+let res = await fetch("/api/result");
 
-.then(r=>r.json())
+let data = await res.json();
 
-.then(d=>{
+document.getElementById("period").innerText = data.period;
 
-document.getElementById("round").innerText="Round ID: "+d.round_id
+document.getElementById("time").innerText = data.time_left;
 
-document.getElementById("timer").innerText="Time Left: "+d.remaining+"s"
+if(data.number === null){
 
-if(d.result!==null){
-document.getElementById("result").innerText=d.result
-}
-else{
-document.getElementById("result").innerText="Waiting..."
-}
+document.getElementById("result").innerHTML = "Waiting...";
 
-let h=""
+}else{
 
-d.history.slice().reverse().forEach(x=>{
-h+=`<li>${x[0]} → ${x[1]}</li>`
-})
-
-document.getElementById("history").innerHTML=h
-
-})
+document.getElementById("result").innerHTML = "<div class='number'>" + data.number + "</div>";
 
 }
 
-setInterval(load,1000)
+}
 
-load()
+setInterval(update,1000);
+
+update();
 
 </script>
 
