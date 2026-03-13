@@ -1,5 +1,4 @@
 import os
-import random
 from datetime import datetime, timedelta
 import pytz
 from flask import Flask, jsonify, render_template
@@ -13,6 +12,22 @@ RESET_HOUR = 5
 RESET_MINUTE = 30
 
 round_results = {}
+
+# Xoroshiro RNG
+def xoroshiro(seed):
+    s0 = seed & 0xFFFFFFFF
+    s1 = (seed ^ 0x9E3779B9) & 0xFFFFFFFF
+
+    while True:
+        result = (s0 + s1) & 0xFFFFFFFF
+
+        s1 ^= s0
+        s0 = ((s0 << 24) | (s0 >> 8)) & 0xFFFFFFFF
+        s0 ^= s1 ^ ((s1 << 16) & 0xFFFFFFFF)
+        s1 = ((s1 << 37) | (s1 >> 27)) & 0xFFFFFFFF
+
+        yield result
+
 
 def get_reset_time(now):
     reset_time = now.replace(hour=RESET_HOUR, minute=RESET_MINUTE, second=0, microsecond=0)
@@ -40,24 +55,19 @@ def get_round_info():
 def generate_result(round_id):
 
     seed = int(round_id[-4:])
-    random.seed(seed)
+
+    rng = xoroshiro(seed)
 
     numbers = []
 
-    # RNG1 (Mersenne Twister)
-    for _ in range(500):
-        numbers.append(random.randint(0,9))
-
-    # RNG2 (PCG style simple generator)
-    state = seed
-    for _ in range(500):
-        state = (6364136223846793005 * state + 1) & 0xFFFFFFFF
-        numbers.append(state % 10)
+    # generate 1000 numbers
+    for _ in range(1000):
+        numbers.append(next(rng) % 10)
 
     freq = {}
 
     for n in numbers:
-        freq[n] = freq.get(n,0) + 1
+        freq[n] = freq.get(n, 0) + 1
 
     result = max(freq, key=freq.get)
 
@@ -74,7 +84,7 @@ def api():
 
     round_id, remaining = get_round_info()
 
-    # preview 40 sec
+    # preview at 40 sec
     if remaining <= 40:
 
         if round_id not in round_results:
@@ -93,5 +103,5 @@ def api():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT",10000))
-    app.run(host="0.0.0.0",port=port)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
