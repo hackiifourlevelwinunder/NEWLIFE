@@ -2,7 +2,7 @@ import os
 import random
 from datetime import datetime, timedelta
 import pytz
-from flask import Flask, jsonify
+from flask import Flask
 
 app = Flask(__name__)
 
@@ -54,19 +54,6 @@ def generate_result():
 @app.route("/")
 def home():
 
-    round_id, remaining = get_round_info()
-
-    return f"""
-    <h2>Live RNG</h2>
-    <p>Round ID: {round_id}</p>
-    <p>Time Left: {remaining}s</p>
-    <p>Result will show at 40 sec</p>
-    """
-
-
-@app.route("/api")
-def api():
-
     global last_round
     global last_result
 
@@ -81,15 +68,30 @@ def api():
         result = last_result
 
     else:
-        result = None
+        result = "Waiting..."
 
-    return jsonify({
-        "round_id": round_id,
-        "remaining": remaining,
-        "result": result
-    })
+    return f"""
+    <html>
+    <head>
+    <meta http-equiv="refresh" content="1">
+    <title>Live RNG</title>
+    </head>
+
+    <body style="font-family:sans-serif;text-align:center;margin-top:60px">
+
+    <h1>🎲 Live RNG</h1>
+
+    <h3>Round ID: {round_id}</h3>
+
+    <h2>Time Left: {remaining}s</h2>
+
+    <h1 style="font-size:80px;color:green">{result}</h1>
+
+    </body>
+    </html>
+    """
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT",10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0",port=port)
