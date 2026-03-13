@@ -8,10 +8,10 @@ app = Flask(__name__)
 ROUND_TIME = 60
 PREVIEW_TIME = 40
 
-SERVER_SEED = "ankush_super_secret_salt"
+SERVER_SEED = "ankush_secret_seed_2026"
 
 
-def get_today_reset():
+def get_reset_time():
 
     now = datetime.now()
 
@@ -25,15 +25,15 @@ def get_today_reset():
 
 def get_round():
 
-    reset = get_today_reset()
+    reset = get_reset_time()
 
     now = datetime.now()
 
     diff = now - reset
 
-    seconds = diff.total_seconds()
+    seconds = int(diff.total_seconds())
 
-    round_number = int(seconds // 60) + 1
+    round_number = seconds // 60 + 1
 
     return round_number
 
@@ -51,27 +51,20 @@ def get_period():
 
 def get_time_left():
 
-    t = int(time.time())
+    now = int(time.time())
 
-    return ROUND_TIME - (t % ROUND_TIME)
+    return ROUND_TIME - (now % ROUND_TIME)
 
 
 def generate_number(period):
 
     data = f"{SERVER_SEED}-{period}"
 
-    h = hashlib.sha256(data.encode()).hexdigest()
+    hash_value = hashlib.sha256(data.encode()).hexdigest()
 
-    number = int(h, 16) % 10
+    number = int(hash_value, 16) % 10
 
     return number
-
-
-def get_size(n):
-
-    if n >= 5:
-        return "Big"
-    return "Small"
 
 
 def get_color(n):
@@ -83,45 +76,56 @@ def get_color(n):
         return "Red"
 
     if n == 0:
-        return "Red + Violet"
+        return "Red+Violet"
 
     if n == 5:
-        return "Green + Violet"
+        return "Green+Violet"
+
+
+def get_size(n):
+
+    if n >= 5:
+        return "Big"
+    else:
+        return "Small"
 
 
 @app.route("/")
 def home():
+
     return render_template("index.html")
 
 
 @app.route("/api/result")
-def api():
+def result():
 
     period = get_period()
 
     time_left = get_time_left()
 
+    number = generate_number(period)
+
     if time_left <= PREVIEW_TIME:
+        show_number = number
+    else:
+        show_number = None
 
-        number = generate_number(period)
+    if show_number is not None:
 
-        color = get_color(number)
+        color = get_color(show_number)
 
-        size = get_size(number)
+        size = get_size(show_number)
 
     else:
 
-        number = None
-
         color = None
-
         size = None
 
     return jsonify({
 
         "period": period,
         "time_left": time_left,
-        "number": number,
+        "number": show_number,
         "color": color,
         "size": size
 
