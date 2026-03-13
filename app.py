@@ -2,7 +2,7 @@ import os
 import secrets
 from datetime import datetime, timedelta
 import pytz
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
 
@@ -12,9 +12,7 @@ FIXED_PART = "10001"
 RESET_HOUR = 5
 RESET_MINUTE = 30
 
-current_round = None
-current_result = None
-
+round_cache = {}
 
 def get_reset_time(now):
     reset_time = now.replace(hour=RESET_HOUR, minute=RESET_MINUTE, second=0, microsecond=0)
@@ -53,31 +51,22 @@ def generate_result():
 
 @app.route("/")
 def home():
-    round_id, remaining = get_round_info()
-
-    return f"""
-    <h2>Live RNG</h2>
-    <p>Round ID: {round_id}</p>
-    <p>Time Left: {remaining}s</p>
-    <p>Result: waiting...</p>
-    """
+    return render_template("index.html")
 
 
 @app.route("/api")
 def api():
 
-    global current_round
-    global current_result
-
     round_id, remaining = get_round_info()
 
+    # preview at 40 seconds
     if remaining <= 40:
 
-        if current_round != round_id:
-            current_result = generate_result()
-            current_round = round_id
+        if round_id not in round_cache:
+            round_cache.clear()
+            round_cache[round_id] = generate_result()
 
-        result = current_result
+        result = round_cache[round_id]
 
     else:
         result = None
