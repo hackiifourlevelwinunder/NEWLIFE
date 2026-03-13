@@ -10,7 +10,7 @@ IST = pytz.timezone("Asia/Kolkata")
 ROUND_TIME = 60
 PREVIEW_TIME = 40
 
-# LCG constants
+# LCG parameters
 A = 1103515245
 C = 12345
 M = 2**31
@@ -21,6 +21,7 @@ def get_now():
 
 
 def get_reset_time():
+
     now = get_now()
 
     reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
@@ -32,6 +33,7 @@ def get_reset_time():
 
 
 def get_round():
+
     now = get_now()
     reset = get_reset_time()
 
@@ -43,6 +45,7 @@ def get_round():
 
 
 def get_period():
+
     date = get_now().strftime("%Y%m%d")
 
     round_number = get_round()
@@ -51,6 +54,7 @@ def get_period():
 
 
 def get_time_left():
+
     now = int(time.time())
 
     return ROUND_TIME - (now % ROUND_TIME)
@@ -58,18 +62,16 @@ def get_time_left():
 
 def lcg(seed):
 
-    next_val = (A * seed + C) % M
-
-    return next_val
+    return (A * seed + C) % M
 
 
 def generate_number(period):
 
-    seed = int(period[-6:])
+    seed = int(period[-4:])  # last 4 digits (example 1064)
 
-    x = lcg(seed)
+    value = lcg(seed)
 
-    return x % 10
+    return value % 10
 
 
 @app.route("/")
