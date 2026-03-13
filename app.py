@@ -13,7 +13,6 @@ RESET_HOUR = 5
 RESET_MINUTE = 30
 
 round_results = {}
-preview_numbers = {}
 
 def get_reset_time(now):
     reset_time = now.replace(hour=RESET_HOUR, minute=RESET_MINUTE, second=0, microsecond=0)
@@ -38,20 +37,22 @@ def get_round_info():
     return round_id, remaining
 
 
-def generate_preview(round_id):
+def generate_result(round_id):
 
     seed = int(round_id[-4:])
     random.seed(seed)
 
     numbers = []
 
-    for _ in range(21):
+    # RNG1 (Mersenne Twister)
+    for _ in range(500):
         numbers.append(random.randint(0,9))
 
-    return numbers
-
-
-def calculate_result(numbers):
+    # RNG2 (PCG style simple generator)
+    state = seed
+    for _ in range(500):
+        state = (6364136223846793005 * state + 1) & 0xFFFFFFFF
+        numbers.append(state % 10)
 
     freq = {}
 
@@ -73,27 +74,20 @@ def api():
 
     round_id, remaining = get_round_info()
 
-    # preview start (40 sec)
+    # preview 40 sec
     if remaining <= 40:
 
-        if round_id not in preview_numbers:
-            preview_numbers[round_id] = generate_preview(round_id)
-
-        numbers = preview_numbers[round_id]
-
         if round_id not in round_results:
-            round_results[round_id] = calculate_result(numbers)
+            round_results[round_id] = generate_result(round_id)
 
         result = round_results[round_id]
 
     else:
-        numbers = []
         result = None
 
     return jsonify({
         "round_id": round_id,
         "remaining": remaining,
-        "preview_numbers": numbers,
         "result": result
     })
 
