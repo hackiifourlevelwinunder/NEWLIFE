@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Live RNG</title>
+<title>HIGH PROFIT</title>
 
 <style>
 
@@ -15,20 +15,40 @@ margin-top:80px;
 
 .card{
 background:#14263a;
-width:320px;
+width:360px;
 margin:auto;
 padding:30px;
 border-radius:15px;
 }
 
+.title{
+font-size:28px;
+color:#00ff9c;
+margin-bottom:20px;
+}
+
 .number{
-font-size:80px;
+font-size:60px;
 color:#00ff9c;
 }
 
+.preview{
+display:flex;
+justify-content:space-around;
+margin-top:20px;
+}
+
+.box{
+background:#1f3b5b;
+padding:20px;
+border-radius:10px;
+width:120px;
+}
+
 .wait{
-font-size:50px;
+font-size:25px;
 color:#00ff9c;
+margin-top:20px;
 }
 
 </style>
@@ -39,13 +59,27 @@ color:#00ff9c;
 
 <div class="card">
 
-<h2>🎲 Live RNG</h2>
+<div class="title">HIGH PROFIT</div>
 
 <p>Period: <span id="period">-</span></p>
 
 <p>Time Left: <span id="time">-</span>s</p>
 
-<div id="result" class="wait">Waiting...</div>
+<div class="preview">
+
+<div class="box">
+<p>Preview 1</p>
+<div id="p1" class="number">-</div>
+</div>
+
+<div class="box">
+<p>Preview 2</p>
+<div id="p2" class="number">-</div>
+</div>
+
+</div>
+
+<div id="wait" class="wait">Waiting...</div>
 
 </div>
 
@@ -61,13 +95,17 @@ document.getElementById("period").innerText = data.period;
 
 document.getElementById("time").innerText = data.time_left;
 
-if(data.number === null){
+if(data.preview1 === null){
 
-document.getElementById("result").innerHTML = "Waiting...";
+document.getElementById("p1").innerText = "-";
+document.getElementById("p2").innerText = "-";
+document.getElementById("wait").innerText = "Waiting...";
 
 }else{
 
-document.getElementById("result").innerHTML = "<div class='number'>" + data.number + "</div>";
+document.getElementById("p1").innerText = data.preview1;
+document.getElementById("p2").innerText = data.preview2;
+document.getElementById("wait").innerText = "";
 
 }
 
