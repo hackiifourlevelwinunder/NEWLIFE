@@ -1,5 +1,5 @@
 import os
-import secrets
+import hashlib
 from datetime import datetime, timedelta
 import pytz
 from flask import Flask, jsonify, render_template
@@ -38,27 +38,18 @@ def get_round_info():
     return round_id, remaining
 
 
-def generate_result():
+def generate_result(round_id):
 
-    now = datetime.now(IST)
+    # SHA256 hash
+    h = hashlib.sha256(round_id.encode()).hexdigest()
 
-    # minute based weight
-    hot_digit = now.minute % 10
+    # huge number
+    number = int(h, 16)
 
-    freq = [0] * 10
+    # final digit
+    result = number % 10
 
-    for _ in range(90720):
-
-        # cryptographic random
-        n = secrets.randbelow(10)
-
-        # hot digit boost
-        if secrets.randbelow(4) == 0:
-            n = hot_digit
-
-        freq[n] += 1
-
-    return freq.index(max(freq))
+    return result
 
 
 @app.route("/")
@@ -74,10 +65,11 @@ def api():
 
     round_id, remaining = get_round_info()
 
+    # preview at 40 seconds
     if remaining <= 40:
 
         if last_round != round_id:
-            last_result = generate_result()
+            last_result = generate_result(round_id)
             last_round = round_id
 
         result = last_result
