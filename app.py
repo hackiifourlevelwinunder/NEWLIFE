@@ -2,7 +2,7 @@ import os
 import random
 from datetime import datetime, timedelta
 import pytz
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
@@ -40,22 +40,28 @@ def get_round_info():
 
 def generate_result():
 
-    freq = [0] * 10
+    freq = [0]*10
 
-    # fast local variables
     randint = random.randint
-    f = freq
 
     for _ in range(500000):
-        n = randint(0, 9)
-        f[n] += 1
+        n = randint(0,9)
+        freq[n] += 1
 
-    return f.index(max(f))
+    return freq.index(max(freq))
 
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+
+    round_id, remaining = get_round_info()
+
+    return f"""
+    <h2>Live RNG</h2>
+    <p>Round ID: {round_id}</p>
+    <p>Time Left: {remaining}s</p>
+    <p>Result will show at 40 sec</p>
+    """
 
 
 @app.route("/api")
@@ -66,7 +72,6 @@ def api():
 
     round_id, remaining = get_round_info()
 
-    # preview at 40 seconds
     if remaining <= 40:
 
         if last_round != round_id:
@@ -86,5 +91,5 @@ def api():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT",10000))
     app.run(host="0.0.0.0", port=port)
