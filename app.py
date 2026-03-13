@@ -2,7 +2,7 @@ import os
 import secrets
 from datetime import datetime, timedelta
 import pytz
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
@@ -40,21 +40,27 @@ def get_round_info():
 
 def generate_result():
 
-    freq = {i: 0 for i in range(10)}
+    freq = [0] * 10
 
-    # cryptography RNG
     for _ in range(4021):
         n = secrets.randbelow(10)
         freq[n] += 1
 
-    result = max(freq, key=freq.get)
+    result = freq.index(max(freq))
 
     return result
 
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    round_id, remaining = get_round_info()
+
+    return f"""
+    <h2>Live RNG</h2>
+    <p>Round ID: {round_id}</p>
+    <p>Time Left: {remaining}s</p>
+    <p>Result: waiting...</p>
+    """
 
 
 @app.route("/api")
@@ -84,5 +90,5 @@ def api():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT",10000))
-    app.run(host="0.0.0.0",port=port)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
