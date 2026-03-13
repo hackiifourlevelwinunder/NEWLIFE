@@ -1,19 +1,27 @@
 from flask import Flask, jsonify, render_template
-import hashlib
 import time
 from datetime import datetime, timedelta
+import pytz
 
 app = Flask(__name__)
+
+IST = pytz.timezone("Asia/Kolkata")
 
 ROUND_TIME = 60
 PREVIEW_TIME = 40
 
-SERVER_SEED = "ankush_rng_secret"
+# LCG constants
+A = 1103515245
+C = 12345
+M = 2**31
+
+
+def get_now():
+    return datetime.now(IST)
 
 
 def get_reset_time():
-
-    now = datetime.now()
+    now = get_now()
 
     reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
 
@@ -24,21 +32,18 @@ def get_reset_time():
 
 
 def get_round():
-
+    now = get_now()
     reset = get_reset_time()
-
-    now = datetime.now()
 
     diff = now - reset
 
-    seconds = int(diff.total_seconds())
+    minutes = int(diff.total_seconds() // 60) + 1
 
-    return seconds // 60 + 1
+    return minutes
 
 
 def get_period():
-
-    date = datetime.now().strftime("%Y%m%d")
+    date = get_now().strftime("%Y%m%d")
 
     round_number = get_round()
 
@@ -46,24 +51,29 @@ def get_period():
 
 
 def get_time_left():
-
     now = int(time.time())
 
     return ROUND_TIME - (now % ROUND_TIME)
 
 
+def lcg(seed):
+
+    next_val = (A * seed + C) % M
+
+    return next_val
+
+
 def generate_number(period):
 
-    data = f"{SERVER_SEED}-{period}"
+    seed = int(period[-6:])
 
-    h = hashlib.sha256(data.encode()).hexdigest()
+    x = lcg(seed)
 
-    return int(h, 16) % 10
+    return x % 10
 
 
 @app.route("/")
 def home():
-
     return render_template("index.html")
 
 
