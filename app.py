@@ -16,22 +16,27 @@ def get_now():
 def get_reset_time():
     now = get_now()
     reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
+
     if now < reset:
         reset -= timedelta(days=1)
+
     return reset
 
 
 def get_round():
     now = get_now()
     reset = get_reset_time()
+
     diff = now - reset
     minutes = int(diff.total_seconds() // 60) + 1
+
     return minutes
 
 
 def get_period():
     date = get_now().strftime("%Y%m%d")
     round_number = get_round()
+
     return f"{date}10001{round_number:04d}"
 
 
@@ -40,10 +45,10 @@ def get_time_left():
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# 🔐 Locked Formula RNG
+# RNG FORMULA
 def calculate_digit(period):
 
-    period = int(period[-5:])  # last digits
+    period = int(period[-5:])
 
     last1 = period % 10
     last2 = period % 100
@@ -97,10 +102,13 @@ def result():
 
     number = calculate_digit(period)
 
+    big_small = "Big" if number >= 5 else "Small"
+
     return jsonify({
         "period": period,
         "time_left": time_left,
-        "number": number
+        "number": number,
+        "big_small": big_small
     })
 
 
