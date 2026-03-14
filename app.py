@@ -1,10 +1,61 @@
 from flask import Flask, jsonify, render_template
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
+import pytz
 import os
 
 app = Flask(__name__)
 
-# ===== NUMBER FORMULA =====
+IST = pytz.timezone("Asia/Kolkata")
+ROUND_TIME = 60
+
+
+def get_now():
+    return datetime.now(IST)
+
+
+def get_reset_time():
+
+    now = get_now()
+
+    reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
+
+    if now < reset:
+        reset -= timedelta(days=1)
+
+    return reset
+
+
+def get_round():
+
+    now = get_now()
+
+    reset = get_reset_time()
+
+    diff = now - reset
+
+    minutes = int(diff.total_seconds() // 60) + 1
+
+    return minutes
+
+
+def get_period():
+
+    date = get_now().strftime("%Y%m%d")
+
+    round_number = get_round()
+
+    return f"{date}10001{round_number:04d}"
+
+
+def get_time_left():
+
+    now = int(time.time())
+
+    return ROUND_TIME - (now % ROUND_TIME)
+
+
+# ===== FORMULA =====
 def generate_number(period):
 
     p = str(period)
@@ -19,14 +70,13 @@ def generate_number(period):
         (last3 * 17) +
         (last2 * 13) +
         (last1 * 11) +
-        (period % 31)
+        (int(period) % 31)
     ) % 10
 
     return digit
 
 
-# ===== BIG SMALL =====
-def big_small(num):
+def get_big_small(num):
 
     if num <= 4:
         return "Small"
@@ -34,7 +84,6 @@ def big_small(num):
         return "Big"
 
 
-# ===== COLOR =====
 def get_color(num):
 
     if num in [1,3,7,9]:
@@ -47,41 +96,26 @@ def get_color(num):
         return "Violet"
 
 
-# ===== PERIOD =====
-def generate_period():
-
-    now = datetime.utcnow()
-
-    date = now.strftime("%Y%m%d")
-
-    minute = now.minute + 1
-
-    period = f"{date}1000{minute:04d}"
-
-    return int(period)
-
-
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-@app.route("/result")
+@app.route("/api/result")
 def result():
 
-    period = generate_period()
+    period = get_period()
+
+    time_left = get_time_left()
 
     number = generate_number(period)
 
-    size = big_small(number)
-
-    color = get_color(number)
-
     return jsonify({
         "period": period,
+        "time_left": time_left,
         "number": number,
-        "size": size,
-        "color": color
+        "size": get_big_small(number),
+        "color": get_color(number)
     })
 
 
