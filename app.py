@@ -10,12 +10,10 @@ IST = pytz.timezone("Asia/Kolkata")
 ROUND_TIME = 60
 
 
-# ===== CURRENT TIME =====
 def get_now():
     return datetime.now(IST)
 
 
-# ===== RESET TIME 5:30 =====
 def get_reset_time():
 
     now = get_now()
@@ -28,7 +26,6 @@ def get_reset_time():
     return reset
 
 
-# ===== ROUND COUNT =====
 def get_round():
 
     now = get_now()
@@ -41,19 +38,14 @@ def get_round():
     return minutes
 
 
-# ===== PERIOD =====
 def get_period():
 
     date = get_now().strftime("%Y%m%d")
-
     round_number = get_round()
 
-    period = f"{date}10001{round_number:04d}"
-
-    return period
+    return f"{date}10001{round_number:04d}"
 
 
-# ===== COUNTDOWN =====
 def get_time_left():
 
     now = int(time.time())
@@ -64,36 +56,32 @@ def get_time_left():
 # ===== RNG FORMULA =====
 def generate_number(period):
 
-    period_int = int(period)
+    p = int(period)
 
-    last1 = period_int % 10
-    last2 = (period_int // 10) % 100
-    last3 = (period_int // 10) % 1000
-    last4 = (period_int // 10) % 10000
+    last1 = p % 10
+    last2 = p % 100
+    last3 = p % 1000
+    last4 = p % 10000
 
     value = (
         last4 * 19 +
         last3 * 17 +
         last2 * 13 +
         last1 * 11 +
-        (period_int % 31)
+        (p % 31)
     )
 
-    digit = value % 10
-
-    return digit
+    return value % 10
 
 
-# ===== SIZE =====
 def get_size(num):
 
-    if num <= 4:
-        return "Small"
-    else:
+    if num >= 5:
         return "Big"
+    else:
+        return "Small"
 
 
-# ===== COLOR =====
 def get_color(num):
 
     if num in [1,3,7,9]:
@@ -115,12 +103,11 @@ def home():
 def result():
 
     period = get_period()
-
     time_left = get_time_left()
 
     number = generate_number(period)
 
-    preview = None
+    preview = "--"
 
     if time_left <= 50:
         preview = number
