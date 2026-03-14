@@ -14,6 +14,7 @@ def get_now():
 
 
 def get_reset_time():
+
     now = get_now()
 
     reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
@@ -53,12 +54,12 @@ def get_time_left():
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# Formula
+# 🔥 Your Locked Formula
 def calculate_digit(period):
 
-    period = int(period[-5:])
+    p = int(period[-5:])
 
-    digit = (period % 10 + period % 9 + period % 8 + period % 7 + period % 5 + period % 3) % 10
+    digit = (p % 10 + p % 6 + p % 5) % 10
 
     return digit
 
@@ -75,15 +76,9 @@ def result():
 
     time_left = get_time_left()
 
-    number = None
+    number = calculate_digit(period)
 
-    # 40 second rule
-    if time_left <= 40:
-        number = calculate_digit(period)
-
-    big_small = None
-    if number is not None:
-        big_small = "Big" if number >= 5 else "Small"
+    big_small = "Big" if number >= 5 else "Small"
 
     return jsonify({
         "period": period,
