@@ -14,9 +14,9 @@ font-family:Arial;
 }
 
 #number{
-font-size:80px;
+font-size:90px;
 font-weight:bold;
-margin-top:20px;
+margin-top:10px;
 }
 
 </style>
@@ -39,32 +39,31 @@ margin-top:20px;
 
 <script>
 
-function loadResult(){
+function loadData(){
 
 fetch("/api/result")
+
 .then(res => res.json())
+
 .then(data => {
 
 document.getElementById("period").innerText = data.period
 
 document.getElementById("timer").innerText = data.time_left
 
-if(data.preview !== null){
 document.getElementById("number").innerText = data.preview
-}else{
-document.getElementById("number").innerText = "--"
-}
 
 document.getElementById("size").innerText = data.size
+
 document.getElementById("color").innerText = data.color
 
 })
 
 }
 
-setInterval(loadResult,1000)
+setInterval(loadData,1000)
 
-loadResult()
+loadData()
 
 </script>
 
