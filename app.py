@@ -15,6 +15,7 @@ def get_now():
 
 def get_reset_time():
     now = get_now()
+
     reset = now.replace(hour=5, minute=30, second=0, microsecond=0)
 
     if now < reset:
@@ -24,68 +25,41 @@ def get_reset_time():
 
 
 def get_round():
+
     now = get_now()
+
     reset = get_reset_time()
 
     diff = now - reset
+
     minutes = int(diff.total_seconds() // 60) + 1
 
     return minutes
 
 
 def get_period():
+
     date = get_now().strftime("%Y%m%d")
+
     round_number = get_round()
 
     return f"{date}10001{round_number:04d}"
 
 
 def get_time_left():
+
     now = int(time.time())
+
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# RNG FORMULA
+# Formula
 def calculate_digit(period):
 
     period = int(period[-5:])
 
-    last1 = period % 10
-    last2 = period % 100
-    last3 = period % 1000
-    last4 = period % 10000
+    digit = (period % 10 + period % 9 + period % 8 + period % 7 + period % 5 + period % 3) % 10
 
-    value = (
-        (last1*97) +
-        (last2*89) +
-        (last3*83) +
-        (last4*79) +
-        (period % 101) +
-        (period % 97) +
-        (period % 89) +
-        (period % 83) +
-        (period % 79) +
-        (period % 73) +
-        (period % 71) +
-        (period % 67) +
-        (period % 61) +
-        (period % 59) +
-        (period % 53) +
-        (period % 47) +
-        (period % 43) +
-        (period % 41) +
-        (period % 37) +
-        (period % 31) +
-        (period % 29) +
-        (period % 23) +
-        (period % 19) +
-        (period % 17) +
-        (period % 13) +
-        (period % 11) +
-        (period % 7)
-    )
-
-    digit = value % 10
     return digit
 
 
@@ -98,11 +72,18 @@ def home():
 def result():
 
     period = get_period()
+
     time_left = get_time_left()
 
-    number = calculate_digit(period)
+    number = None
 
-    big_small = "Big" if number >= 5 else "Small"
+    # 40 second rule
+    if time_left <= 40:
+        number = calculate_digit(period)
+
+    big_small = None
+    if number is not None:
+        big_small = "Big" if number >= 5 else "Small"
 
     return jsonify({
         "period": period,
