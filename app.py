@@ -29,7 +29,6 @@ def get_reset_time():
 def get_round():
 
     now = get_now()
-
     reset = get_reset_time()
 
     diff = now - reset
@@ -45,7 +44,9 @@ def get_period():
 
     round_number = get_round()
 
-    return f"{date}10001{round_number:04d}"
+    period = f"{date}10001{round_number:04d}"
+
+    return period
 
 
 def get_time_left():
@@ -55,8 +56,11 @@ def get_time_left():
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# ===== FORMULA =====
+# ===== FIXED FORMULA =====
+
 def generate_number(period):
+
+    period = int(period)
 
     p = str(period)
 
@@ -70,7 +74,7 @@ def generate_number(period):
         (last3 * 17) +
         (last2 * 13) +
         (last1 * 11) +
-        (int(period) % 31)
+        (period % 31)
     ) % 10
 
     return digit
