@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template
-import time
 from datetime import datetime, timedelta
 import pytz
+import time
 import os
 
 app = Flask(__name__)
@@ -10,10 +10,12 @@ IST = pytz.timezone("Asia/Kolkata")
 ROUND_TIME = 60
 
 
+# ===== CURRENT TIME =====
 def get_now():
     return datetime.now(IST)
 
 
+# ===== RESET TIME 5:30 AM =====
 def get_reset_time():
 
     now = get_now()
@@ -26,6 +28,7 @@ def get_reset_time():
     return reset
 
 
+# ===== ROUND NUMBER =====
 def get_round():
 
     now = get_now()
@@ -38,6 +41,7 @@ def get_round():
     return minutes
 
 
+# ===== PERIOD =====
 def get_period():
 
     date = get_now().strftime("%Y%m%d")
@@ -49,6 +53,7 @@ def get_period():
     return period
 
 
+# ===== COUNTDOWN =====
 def get_time_left():
 
     now = int(time.time())
@@ -56,31 +61,33 @@ def get_time_left():
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# ===== FIXED FORMULA =====
-
+# ===== FORMULA (NO BUG) =====
 def generate_number(period):
 
-    period = int(period)
+    period_int = int(period)
 
-    p = str(period)
+    p = str(period_int)
 
     last4 = int(p[-4:])
     last3 = int(p[-3:])
     last2 = int(p[-2:])
     last1 = int(p[-1])
 
-    digit = (
-        (last4 * 19) +
-        (last3 * 17) +
-        (last2 * 13) +
-        (last1 * 11) +
-        (period % 31)
-    ) % 10
+    calc = (
+        last4 * 19 +
+        last3 * 17 +
+        last2 * 13 +
+        last1 * 11 +
+        (period_int % 31)
+    )
+
+    digit = calc % 10
 
     return digit
 
 
-def get_big_small(num):
+# ===== SIZE =====
+def get_size(num):
 
     if num <= 4:
         return "Small"
@@ -88,6 +95,7 @@ def get_big_small(num):
         return "Big"
 
 
+# ===== COLOR =====
 def get_color(num):
 
     if num in [1,3,7,9]:
@@ -114,15 +122,23 @@ def result():
 
     number = generate_number(period)
 
+    preview = None
+
+    # ===== 50 SECOND PREVIEW =====
+    if time_left <= 50:
+        preview = number
+
     return jsonify({
         "period": period,
         "time_left": time_left,
+        "preview": preview,
         "number": number,
-        "size": get_big_small(number),
+        "size": get_size(number),
         "color": get_color(number)
     })
 
 
+# ===== SERVER START =====
 if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 10000))
