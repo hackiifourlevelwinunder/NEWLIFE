@@ -1,119 +1,66 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>HIGH PROFIT</title>
+<title>RNG Result</title>
 
 <style>
 
 body{
-background:#0b1b2b;
-color:white;
 font-family:Arial;
+background:#111;
+color:white;
 text-align:center;
-margin-top:80px;
 }
 
-.card{
-background:#14263a;
-width:360px;
-margin:auto;
-padding:30px;
-border-radius:15px;
-}
-
-.title{
-font-size:28px;
-color:#00ff9c;
-margin-bottom:20px;
+.box{
+margin-top:100px;
 }
 
 .number{
 font-size:60px;
-color:#00ff9c;
+font-weight:bold;
 }
 
-.preview{
-display:flex;
-justify-content:space-around;
-margin-top:20px;
-}
-
-.box{
-background:#1f3b5b;
-padding:20px;
-border-radius:10px;
-width:120px;
-}
-
-.wait{
-font-size:25px;
-color:#00ff9c;
-margin-top:20px;
-}
+.small{color:yellow;}
+.big{color:red;}
 
 </style>
-
 </head>
 
 <body>
 
-<div class="card">
-
-<div class="title">HIGH PROFIT</div>
-
-<p>Period: <span id="period">-</span></p>
-
-<p>Time Left: <span id="time">-</span>s</p>
-
-<div class="preview">
-
 <div class="box">
-<p>Preview 1</p>
-<div id="p1" class="number">-</div>
-</div>
 
-<div class="box">
-<p>Preview 2</p>
-<div id="p2" class="number">-</div>
-</div>
+<h2>Period</h2>
+<div id="period">Loading...</div>
 
-</div>
+<h2>Preview</h2>
+<div class="number" id="number">--</div>
 
-<div id="wait" class="wait">Waiting...</div>
+<h2 id="size"></h2>
+<h2 id="color"></h2>
 
 </div>
 
 <script>
 
-async function update(){
+function loadResult(){
 
-let res = await fetch("/api/result");
-
-let data = await res.json();
+fetch("/result")
+.then(res=>res.json())
+.then(data=>{
 
 document.getElementById("period").innerText = data.period;
+document.getElementById("number").innerText = data.number;
+document.getElementById("size").innerText = data.size;
+document.getElementById("color").innerText = data.color;
 
-document.getElementById("time").innerText = data.time_left;
-
-if(data.preview1 === null){
-
-document.getElementById("p1").innerText = "-";
-document.getElementById("p2").innerText = "-";
-document.getElementById("wait").innerText = "Waiting...";
-
-}else{
-
-document.getElementById("p1").innerText = data.preview1;
-document.getElementById("p2").innerText = data.preview2;
-document.getElementById("wait").innerText = "";
+});
 
 }
 
-}
-
-setInterval(update,1000);
-
-update();
+loadResult();
+setInterval(loadResult,5000);
 
 </script>
 
