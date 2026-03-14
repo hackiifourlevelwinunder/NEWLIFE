@@ -7,6 +7,7 @@ import os
 app = Flask(__name__)
 
 IST = pytz.timezone("Asia/Kolkata")
+
 ROUND_TIME = 60
 
 
@@ -32,6 +33,7 @@ def get_reset_time():
 def get_round():
 
     now = get_now()
+
     reset = get_reset_time()
 
     diff = now - reset
@@ -48,9 +50,7 @@ def get_period():
 
     round_number = get_round()
 
-    period = f"{date}10001{round_number:04d}"
-
-    return period
+    return f"{date}10001{round_number:04d}"
 
 
 # ===== COUNTDOWN =====
@@ -61,32 +61,30 @@ def get_time_left():
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# ===== FORMULA (NO BUG) =====
+# ===== FORMULA =====
 def generate_number(period):
 
-    period_int = int(period)
-
-    p = str(period_int)
+    p = str(period)
 
     last4 = int(p[-4:])
     last3 = int(p[-3:])
     last2 = int(p[-2:])
     last1 = int(p[-1])
 
-    calc = (
+    value = (
         last4 * 19 +
         last3 * 17 +
         last2 * 13 +
         last1 * 11 +
-        (period_int % 31)
+        (int(period) % 31)
     )
 
-    digit = calc % 10
+    digit = value % 10
 
     return digit
 
 
-# ===== SIZE =====
+# ===== BIG SMALL =====
 def get_size(num):
 
     if num <= 4:
@@ -124,7 +122,7 @@ def result():
 
     preview = None
 
-    # ===== 50 SECOND PREVIEW =====
+    # ===== SHOW PREVIEW AFTER 10 SEC =====
     if time_left <= 50:
         preview = number
 
@@ -138,7 +136,6 @@ def result():
     })
 
 
-# ===== SERVER START =====
 if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 10000))
