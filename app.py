@@ -4,7 +4,6 @@ import os
 
 app = Flask(__name__)
 
-
 # ===== NUMBER FORMULA =====
 def generate_number(period):
 
@@ -48,27 +47,25 @@ def get_color(num):
         return "Violet"
 
 
-# ===== PERIOD GENERATE =====
+# ===== PERIOD =====
 def generate_period():
 
     now = datetime.utcnow()
 
     date = now.strftime("%Y%m%d")
 
-    minute = now.hour * 60 + now.minute
+    minute = now.minute + 1
 
     period = f"{date}1000{minute:04d}"
 
     return int(period)
 
 
-# ===== HOME PAGE =====
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# ===== RESULT API =====
 @app.route("/result")
 def result():
 
@@ -88,7 +85,6 @@ def result():
     })
 
 
-# ===== RUN SERVER (RENDER FIX) =====
 if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 10000))
