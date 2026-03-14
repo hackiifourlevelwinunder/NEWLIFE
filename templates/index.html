@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <title>RNG Panel</title>
@@ -18,13 +17,10 @@ h2{
 margin-top:20px;
 }
 
-.number{
+#number{
 font-size:80px;
 font-weight:bold;
-}
-
-.timer{
-font-size:35px;
+margin-top:20px;
 }
 
 </style>
@@ -37,14 +33,13 @@ font-size:35px;
 <div id="period">--</div>
 
 <h2>Countdown</h2>
-<div class="timer" id="timer">--</div>
+<div id="timer">--</div>
 
 <h2>Preview</h2>
-<div class="number" id="number">--</div>
+<div id="number">--</div>
 
-<h2 id="size"></h2>
-<h2 id="color"></h2>
-
+<h3 id="size"></h3>
+<h3 id="color"></h3>
 
 <script>
 
@@ -52,19 +47,22 @@ function loadResult(){
 
 fetch("/api/result")
 
-.then(res => res.json())
+.then(response => response.json())
 
 .then(data => {
 
 document.getElementById("period").innerText = data.period
 
-document.getElementById("number").innerText = data.number
+document.getElementById("timer").innerText = data.time_left
+
+if(data.preview !== null){
+document.getElementById("number").innerText = data.preview
+}else{
+document.getElementById("number").innerText = "--"
+}
 
 document.getElementById("size").innerText = data.size
-
 document.getElementById("color").innerText = data.color
-
-document.getElementById("timer").innerText = data.time_left
 
 })
 
@@ -75,7 +73,6 @@ setInterval(loadResult,1000)
 loadResult()
 
 </script>
-
 
 </body>
 </html>
