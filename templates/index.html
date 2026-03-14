@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>RNG Result</title>
+<title>RNG Panel</title>
 
 <style>
 
@@ -13,13 +14,17 @@ text-align:center;
 font-family:Arial;
 }
 
+h2{
+margin-top:20px;
+}
+
 .number{
 font-size:80px;
 font-weight:bold;
 }
 
 .timer{
-font-size:30px;
+font-size:35px;
 }
 
 </style>
@@ -32,7 +37,7 @@ font-size:30px;
 <div id="period">--</div>
 
 <h2>Countdown</h2>
-<div class="timer" id="timer">60</div>
+<div class="timer" id="timer">--</div>
 
 <h2>Preview</h2>
 <div class="number" id="number">--</div>
@@ -45,41 +50,32 @@ font-size:30px;
 
 function loadResult(){
 
-fetch("/result")
-.then(res=>res.json())
-.then(data=>{
+fetch("/api/result")
 
-document.getElementById("period").innerText=data.period;
-document.getElementById("number").innerText=data.number;
-document.getElementById("size").innerText=data.size;
-document.getElementById("color").innerText=data.color;
+.then(res => res.json())
 
-});
+.then(data => {
 
-}
+document.getElementById("period").innerText = data.period
 
-loadResult();
-setInterval(loadResult,5000);
+document.getElementById("number").innerText = data.number
 
+document.getElementById("size").innerText = data.size
 
-function startTimer(){
+document.getElementById("color").innerText = data.color
 
-setInterval(function(){
+document.getElementById("timer").innerText = data.time_left
 
-let now = new Date();
-let sec = now.getSeconds();
-
-let left = 60-sec;
-
-document.getElementById("timer").innerText = left;
-
-},1000);
+})
 
 }
 
-startTimer();
+setInterval(loadResult,1000)
+
+loadResult()
 
 </script>
+
 
 </body>
 </html>
