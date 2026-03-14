@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <title>RNG Result</title>
 
 <style>
 
 body{
-font-family:Arial;
-background:#111;
+background:black;
 color:white;
 text-align:center;
-}
-
-.box{
-margin-top:100px;
+font-family:Arial;
 }
 
 .number{
-font-size:60px;
+font-size:80px;
 font-weight:bold;
 }
 
-.small{color:yellow;}
-.big{color:red;}
+.timer{
+font-size:30px;
+}
 
 </style>
+
 </head>
 
 <body>
 
-<div class="box">
-
 <h2>Period</h2>
-<div id="period">Loading...</div>
+<div id="period">--</div>
+
+<h2>Countdown</h2>
+<div class="timer" id="timer">60</div>
 
 <h2>Preview</h2>
 <div class="number" id="number">--</div>
@@ -40,7 +40,6 @@ font-weight:bold;
 <h2 id="size"></h2>
 <h2 id="color"></h2>
 
-</div>
 
 <script>
 
@@ -50,10 +49,10 @@ fetch("/result")
 .then(res=>res.json())
 .then(data=>{
 
-document.getElementById("period").innerText = data.period;
-document.getElementById("number").innerText = data.number;
-document.getElementById("size").innerText = data.size;
-document.getElementById("color").innerText = data.color;
+document.getElementById("period").innerText=data.period;
+document.getElementById("number").innerText=data.number;
+document.getElementById("size").innerText=data.size;
+document.getElementById("color").innerText=data.color;
 
 });
 
@@ -61,6 +60,24 @@ document.getElementById("color").innerText = data.color;
 
 loadResult();
 setInterval(loadResult,5000);
+
+
+function startTimer(){
+
+setInterval(function(){
+
+let now = new Date();
+let sec = now.getSeconds();
+
+let left = 60-sec;
+
+document.getElementById("timer").innerText = left;
+
+},1000);
+
+}
+
+startTimer();
 
 </script>
 
