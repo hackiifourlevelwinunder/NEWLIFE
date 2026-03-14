@@ -2,7 +2,7 @@
 <html>
 <head>
 
-<title>RNG Panel</title>
+<title>Wingo RNG</title>
 
 <style>
 
@@ -10,13 +10,11 @@ body{
 background:black;
 color:white;
 text-align:center;
-font-family:Arial;
+font-family:sans-serif;
 }
 
-#number{
-font-size:90px;
-font-weight:bold;
-margin-top:10px;
+h1{
+font-size:70px;
 }
 
 </style>
@@ -25,45 +23,36 @@ margin-top:10px;
 
 <body>
 
-<h2>Period</h2>
-<div id="period">--</div>
+<h3>Period</h3>
+<div id="period"></div>
 
-<h2>Countdown</h2>
-<div id="timer">--</div>
+<h3>Countdown</h3>
+<div id="countdown"></div>
 
-<h2>Preview</h2>
-<div id="number">--</div>
+<h3>Preview</h3>
 
-<h3 id="size"></h3>
-<h3 id="color"></h3>
+<h1 id="preview">0</h1>
+
+<div id="bigsmall"></div>
 
 <script>
 
-function loadData(){
+async function load(){
 
-fetch("/api/result")
-
-.then(res => res.json())
-
-.then(data => {
+const res = await fetch("/api/result")
+const data = await res.json()
 
 document.getElementById("period").innerText = data.period
+document.getElementById("countdown").innerText = data.time_left
 
-document.getElementById("timer").innerText = data.time_left
-
-document.getElementById("number").innerText = data.preview
-
-document.getElementById("size").innerText = data.size
-
-document.getElementById("color").innerText = data.color
-
-})
+document.getElementById("preview").innerText = data.number
+document.getElementById("bigsmall").innerText = data.big_small
 
 }
 
-setInterval(loadData,1000)
+setInterval(load,1000)
 
-loadData()
+load()
 
 </script>
 
