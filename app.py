@@ -1,16 +1,19 @@
-from flask import Flask, jsonify
-import time
+from flask import Flask, jsonify, render_template
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
-# ===== NUMBER GENERATE FORMULA =====
+
+# ===== NUMBER FORMULA =====
 def generate_number(period):
 
-    last4 = int(str(period)[-4:])
-    last3 = int(str(period)[-3:])
-    last2 = int(str(period)[-2:])
-    last1 = int(str(period)[-1])
+    p = str(period)
+
+    last4 = int(p[-4:])
+    last3 = int(p[-3:])
+    last2 = int(p[-2:])
+    last1 = int(p[-1])
 
     digit = (
         (last4 * 19) +
@@ -25,6 +28,7 @@ def generate_number(period):
 
 # ===== BIG SMALL =====
 def big_small(num):
+
     if num <= 4:
         return "Small"
     else:
@@ -32,17 +36,20 @@ def big_small(num):
 
 
 # ===== COLOR =====
-def color(num):
+def get_color(num):
+
     if num in [1,3,7,9]:
         return "Green"
+
     elif num in [2,4,6,8]:
         return "Red"
+
     else:
         return "Violet"
 
 
-# ===== PERIOD =====
-def get_period():
+# ===== PERIOD GENERATE =====
+def generate_period():
 
     now = datetime.utcnow()
 
@@ -55,26 +62,35 @@ def get_period():
     return int(period)
 
 
+# ===== HOME PAGE =====
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
 # ===== RESULT API =====
 @app.route("/result")
 def result():
 
-    period = get_period()
+    period = generate_period()
 
     number = generate_number(period)
 
     size = big_small(number)
 
-    clr = color(number)
+    color = get_color(number)
 
     return jsonify({
         "period": period,
         "number": number,
         "size": size,
-        "color": clr
+        "color": color
     })
 
 
-# ===== RUN SERVER =====
+# ===== RUN SERVER (RENDER FIX) =====
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+
+    port = int(os.environ.get("PORT", 10000))
+
+    app.run(host="0.0.0.0", port=port)
