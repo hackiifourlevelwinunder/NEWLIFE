@@ -49,29 +49,30 @@ def get_period():
 def get_time_left():
 
     now = int(time.time())
-
     return ROUND_TIME - (now % ROUND_TIME)
 
 
-# ===== RNG FORMULA =====
+# ✅ CORRECT RNG FORMULA
 def generate_number(period):
 
-    p = int(period)
+    p = str(period)
 
-    last1 = p % 10
-    last2 = p % 100
-    last3 = p % 1000
-    last4 = p % 10000
+    last4 = int(p[-4:])
+    last3 = int(p[-3:])
+    last2 = int(p[-2:])
+    last1 = int(p[-1])
 
-    value = (
+    result = (
         last4 * 19 +
         last3 * 17 +
         last2 * 13 +
         last1 * 11 +
-        (p % 31)
+        (int(period) % 31)
     )
 
-    return value % 10
+    digit = result % 10
+
+    return digit
 
 
 def get_size(num):
